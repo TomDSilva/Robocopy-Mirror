@@ -2,8 +2,9 @@
 
 ###############################################################################################################################
 #                                                                                                                             #
-#  Powershell Script to mirror files using Robocopy                                                                           #
-#  THIS IS A POTENTIALLY VERY DANGEROUS SCRIPT, YOU HAVE BEEN WARNED                                                          #
+#  A PowerShell script to mirror files & folders using Robocopy.                                                              #
+#                                                                                                                             #
+#  THIS IS A POTENTIALLY VERY DANGEROUS SCRIPT, YOU HAVE BEEN WARNED!                                                         #
 #  THIS WILL DELETE FILES AT THE DESTINATION THAT DO NOT EXIST AT THE SOURCE!                                                 #
 #                                                                                                                             #
 #  DISCLAIMER: THIS CODE IS PROVIDED FREE OF CHARGE. UNDER NO CIRCUMSTANCES SHALL I HAVE ANY LIABILITY TO YOU FOR ANY LOSS    #
