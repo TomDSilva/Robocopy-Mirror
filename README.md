@@ -1,7 +1,8 @@
 # Robocopy-Mirror
 A PowerShell script to mirror files & folders using Robocopy.
 
-This needs admin rights to run (and will auto escalate via a UAC prompt if not).
+This can run with or without admin rights.
+If set to run with admin rights via script variable it will auto escalate via a UAC prompt.
 
 Example of backing up local source data to a local destination:
 
