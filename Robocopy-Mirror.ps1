@@ -31,6 +31,7 @@
 #                    Added basic sanity checks for source and destination. Will now popup with error if not sufficient.       #
 #                    Added runtime banner.                                                                                    #
 #                    Fixed bug when checking if using a temp script.                                                          #
+# 1.5 : 29/05/2023 : Added tidy-up of formatting.                                                                             #
 ###############################################################################################################################
 
 ###############################################################################################################################
@@ -95,7 +96,7 @@ $runAsAdmin = $false
 # tempLocation needed if we are running as admin as running the script from a network share
 # as elevation to local admin will not be able to read this script:
 $tempLocation = 'C:\Temp'
-# dateTime uses for logging purposes:
+# dateTime used for logging purposes:
 $dateTime = Get-Date -Format 'yy-MM-dd HH-mm-ss'
 
 ###############################################################################################################################
@@ -153,6 +154,7 @@ function Assert-OK { if ($LASTEXITCODE -ne 0) { throw } }
 
 function Find-Credential {
     param( [string]$serverName)
+
     [string]$storedCreds = cmdkey.exe "/list:Domain:target=$serverName"
 
     if ($storedCreds -like '* NONE *') {
@@ -162,6 +164,7 @@ function Find-Credential {
 
 function Set-Credential {
     param( [string]$serverName)
+
     $username = Read-Host -Prompt 'Username?'
     $password = Read-Host -Prompt 'Password?' -AsSecureString
     
@@ -178,25 +181,41 @@ function Set-Credential {
 ### End of Function(s)                                                                                                      ###
 ###############################################################################################################################
 
+###############################################################################################################################
+### Start of Error Checking                                                                                                 ###
+###############################################################################################################################
+
+# If source and destination variables hasnt been set then the script cant run.
+# Therefore display popup message and exit script:
 if ('' -eq $sourceDir -or '' -eq $destinationDir) {
     Add-Type -AssemblyName PresentationCore, PresentationFramework
     $MessageboxTitle = 'ERROR'
     $Messageboxbody = '$sourceDir and/or $destinationDir not filled in, please check script user variables.'
     $ButtonType = [System.Windows.MessageBoxButton]::OK
     $MessageIcon = [System.Windows.MessageBoxImage]::Error
-    [System.Windows.MessageBox]::Show($Messageboxbody,$MessageboxTitle,$ButtonType,$messageicon)
+    [System.Windows.MessageBox]::Show($Messageboxbody, $MessageboxTitle, $ButtonType, $messageicon)
     exit
 }
 
+# If the source directory doesnt exist then the script cant run.
+# Therefore display popup message and exit script:
 if (!(Test-Path $sourceDir)) {
     Add-Type -AssemblyName PresentationCore, PresentationFramework
     $MessageboxTitle = 'ERROR'
     $Messageboxbody = '$sourceDir doesnt exist, please check script user variables.'
     $ButtonType = [System.Windows.MessageBoxButton]::OK
     $MessageIcon = [System.Windows.MessageBoxImage]::Error
-    [System.Windows.MessageBox]::Show($Messageboxbody,$MessageboxTitle,$ButtonType,$messageicon)
+    [System.Windows.MessageBox]::Show($Messageboxbody, $MessageboxTitle, $ButtonType, $messageicon)
     exit
 }
+
+###############################################################################################################################
+### End of Error Checking                                                                                                   ###
+###############################################################################################################################
+
+###############################################################################################################################
+### Start of Stop PC Sleeping                                                                                               ###
+###############################################################################################################################
 
 # To stop the PC sleeping temporarily, define the properties of a custom power scheme, to be created on demand.
 $schemeGuid = 'e03c2dc5-fac9-4f5d-9948-0a2fb9009d67' # randomly created with New-Guid
@@ -235,6 +254,11 @@ try {
         }
     }
 
+    ###############################################################################################################################
+    ### End of Stop PC Sleeping                                                                                                 ###
+    ###############################################################################################################################
+
+    # If log location is going to the same place as the temp location then divert it to the users desktop:
     if ($logLocation -eq $tempLocation) {
         $logLocation = "$env:USERPROFILE\Desktop"
     }
@@ -244,15 +268,27 @@ try {
         $logLocation = $logLocation.TrimEnd('\')
     }
 
+    # Sanitize string
+    if ($sourceDir[-1] -ne '\') {
+        $sourceDir = $sourceDir + '\'
+    }
+
+    # Sanitize string
+    if ($destinationDir[-1] -ne '\') {
+        $destinationDir = $destinationDir + '\'
+    }
+
+    # If source client is defined then its a remote system:
     if ($sourceClient -ne '') {
         Find-Credential($sourceClient)
     }
 
+    # If destination client is defined then its a remote system:
     if ($destinationClient -ne '') {
         Find-Credential($destinationClient)
     }
 
-    $folderName = $sourceDir.Split('\')[-1]
+    $folderName = $sourceDir.Split('\')[-2]
 
     $robocopyCommand = "Robocopy.exe `"$sourceDir`" `"$destinationDir`""
 
@@ -302,6 +338,7 @@ finally {
     if ($tempLocation -eq (Split-Path $MyInvocation.MyCommand.Path)) {
         Remove-Item -Path $tempScript
     }
+
     # Wait for the user to acknowledge with the enter key
     Read-Host -Prompt 'Press Enter to exit'
 }
