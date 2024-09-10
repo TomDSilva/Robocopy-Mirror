@@ -32,6 +32,7 @@
 #                    Added runtime banner.                                                                                    #
 #                    Fixed bug when checking if using a temp script.                                                          #
 # 1.5 : 29/05/2023 : Added tidy-up of formatting.                                                                             #
+# 1.6 : 10/09/2024 : Fixed an issue with backslashes at the end of paths being read as an escape character.                   #
 ###############################################################################################################################
 
 ###############################################################################################################################
@@ -269,13 +270,13 @@ try {
     }
 
     # Sanitize string
-    if ($sourceDir[-1] -ne '\') {
-        $sourceDir = $sourceDir + '\'
+    if ($sourceDir[-1] -eq '\') {
+        $sourceDir = $sourceDir.TrimEnd('\')
     }
 
     # Sanitize string
-    if ($destinationDir[-1] -ne '\') {
-        $destinationDir = $destinationDir + '\'
+    if ($destinationDir[-1] -eq '\') {
+        $destinationDir = $destinationDir.TrimEnd('\')
     }
 
     # If source client is defined then its a remote system:
